@@ -42,9 +42,6 @@
             this.statusNode1Btn = new System.Windows.Forms.Button();
             this.statusNode2Btn = new System.Windows.Forms.Button();
             this.distanceWariningTB = new System.Windows.Forms.TextBox();
-            this.trackBar1 = new System.Windows.Forms.TrackBar();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.trackBar2 = new System.Windows.Forms.TrackBar();
             this.button5 = new System.Windows.Forms.Button();
             this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
             this.portnameLable = new System.Windows.Forms.Label();
@@ -57,8 +54,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.volang_picturebox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).BeginInit();
             this.SuspendLayout();
             // 
             // volang_picturebox
@@ -110,7 +105,6 @@
             this.textBox1.TabIndex = 5;
             this.textBox1.Text = "0°";
             this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // distanceTB
             // 
@@ -121,7 +115,6 @@
             this.distanceTB.TabIndex = 6;
             this.distanceTB.Text = "120cm";
             this.distanceTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.distanceTB.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
             // 
             // pictureBox3
             // 
@@ -181,32 +174,6 @@
             this.distanceWariningTB.TabIndex = 12;
             this.distanceWariningTB.Text = "Safety : 120cm";
             this.distanceWariningTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.distanceWariningTB.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
-            // 
-            // trackBar1
-            // 
-            this.trackBar1.Location = new System.Drawing.Point(37, 568);
-            this.trackBar1.Maximum = 180;
-            this.trackBar1.Name = "trackBar1";
-            this.trackBar1.Size = new System.Drawing.Size(405, 45);
-            this.trackBar1.TabIndex = 13;
-            this.trackBar1.Value = 90;
-            this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
-            // 
-            // timer1
-            // 
-            this.timer1.Enabled = true;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // trackBar2
-            // 
-            this.trackBar2.Location = new System.Drawing.Point(524, 567);
-            this.trackBar2.Maximum = 180;
-            this.trackBar2.Name = "trackBar2";
-            this.trackBar2.Size = new System.Drawing.Size(405, 45);
-            this.trackBar2.TabIndex = 14;
-            this.trackBar2.Value = 90;
-            this.trackBar2.Scroll += new System.EventHandler(this.trackBar2_Scroll);
             // 
             // button5
             // 
@@ -282,7 +249,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(1084, 611);
+            this.ClientSize = new System.Drawing.Size(1084, 590);
             this.Controls.Add(this.pingLabel);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.textBox2);
@@ -290,8 +257,6 @@
             this.Controls.Add(this.rotationWarningTb);
             this.Controls.Add(this.portnameLable);
             this.Controls.Add(this.button5);
-            this.Controls.Add(this.trackBar2);
-            this.Controls.Add(this.trackBar1);
             this.Controls.Add(this.distanceWariningTB);
             this.Controls.Add(this.statusNode2Btn);
             this.Controls.Add(this.statusNode1Btn);
@@ -310,8 +275,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.volang_picturebox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -331,9 +294,6 @@
         private System.Windows.Forms.Button statusNode1Btn;
         private System.Windows.Forms.Button statusNode2Btn;
         private System.Windows.Forms.TextBox distanceWariningTB;
-        private System.Windows.Forms.TrackBar trackBar1;
-        private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.TrackBar trackBar2;
         private System.Windows.Forms.Button button5;
         private System.IO.Ports.SerialPort serialPort1;
         private System.Windows.Forms.Label portnameLable;

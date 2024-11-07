@@ -20,13 +20,10 @@ namespace PC_TOOLV2
         int IndexOfNode = 1; 
         int i = 0;
         Thread MainFunctionThread = null;
-        InformationWarning last_Infor = new InformationWarning() { Distance = 0, Rotaion = 0 };
+        InformationWarning last_InforWarning = new InformationWarning() { Distance = 0, Rotaion = 0 };
+        InformationWarning InforWarning = new InformationWarning() { Distance = 120, Rotaion = 30 };
         private string g_DataReceive = null;
-        private int g_Distance = 0;
-        private int g_WarningDistance = 120;
-        private int g_WarningRotation = 30;
         private Image originalImag = null;
-        private float angle = 0;
         private SerialPort g_SerialPort;
         private SerialPort g_lastSerialPort;
         /*Đo thời gian nhận được các bản tin */
@@ -50,9 +47,16 @@ namespace PC_TOOLV2
             PORT_INIT,  /* Trạng thái đang khởi tạo PORT */
             PORT_CHANGE /* Trạng thái thay đổi PORT      */
         }
+        private enum DataStatus_t
+        {
+            NotSent,
+            WaitingForReply,
+            ResponseReceived
+        }
         RequestNode_t requestNode = RequestNode_t.NODE_DEINIT;
         SendRequest_t SendState = SendRequest_t.PC_TOOL_SEND_IDLE;
         PortState_t serailPort1_Config = PortState_t.PORT_INIT;
+        DataStatus_t SerialPort1Status = DataStatus_t.NotSent;
         private enum PCTOOL_State_t
         {
             SYSTEM_INIT,  /*Trạng thái cài đặt hệ thống, yêu cầu kết nối ban đầu   */
@@ -101,6 +105,14 @@ namespace PC_TOOLV2
                             pingTimeout.Reset();
                             this.Invoke(new Action(() => { pingLabel.Text = "ping : 1000 "; }));
                         }
+                        if (SerialPort1Status == DataStatus_t.ResponseReceived && string.Compare(g_DataReceive, "A0-00-0F") == 0 && pingTimeout.ElapsedMilliseconds < 100)
+                        {
+                            this.Invoke(new Action(() => { pingLabel.Text = "ping :" + pingTimeout.ElapsedMilliseconds.ToString() + " ms"; }));
+                            pcToolState = PCTOOL_State_t.SYSTEM_RUN;
+                            timer2.Enabled = false;
+                            statusConnectBtn.BackColor = Color.Green;
+                            pingTimeout.Reset();
+                        }
                         break;
                     case PCTOOL_State_t.SYSTEM_RUN:
 
@@ -146,10 +158,15 @@ namespace PC_TOOLV2
                         SendRequestThresshold();
                         break;
                     case SendRequest_t.PC_TOOL_SEND_IDLE:
+                        if (SerialPort1Status == DataStatus_t.ResponseReceived && String.Compare(g_DataReceive, "Confirm") == 0 && pingTimeout.ElapsedMilliseconds < 100)
+                        {
+                            SendState = SendRequest_t.PC_TOOL_SEND_DONE;
+                        }
                         break;
                     case SendRequest_t.PC_TOOL_SEND_DONE:
                         break;
                 }
+                Thread.Sleep(10);
             }
         }
         private void SettingBTN_Click(object sender, EventArgs e)
@@ -158,7 +175,7 @@ namespace PC_TOOLV2
             newform.WarningDistanceUpdated += UpdateWarningDistance;
             newform.StartPosition = FormStartPosition.Manual;
             newform.Location = new System.Drawing.Point(this.Location.X+50, this.Location.Y+50); // Đặt vị trí tùy ý
-            newform.ReceiveData(new InformationWarning() { Rotaion = g_WarningRotation, Distance = g_WarningDistance });
+            newform.ReceiveData(new InformationWarning() { Rotaion = InforWarning.Rotaion, Distance = InforWarning.Distance });
             newform.Show();
         }
         private Image RotateImage(Image img,float angle)
@@ -181,14 +198,9 @@ namespace PC_TOOLV2
             }
             return rotateBmp;
         }
-
-        private void trackBar1_Scroll(object sender, EventArgs e)
-        {
-            volang_picturebox.Image = RotateImage(originalImag, trackBar1.Value -90);
-            textBox1.Text =( trackBar1.Value - 90).ToString();
-        }
         private void RequestConnection(string message)
         {
+            SerialPort1Status = DataStatus_t.NotSent;
             if (serialPort1.IsOpen == false)
             {
                 try
@@ -203,168 +215,36 @@ namespace PC_TOOLV2
             if (serialPort1.IsOpen == true)
             {
                 serialPort1.WriteLine(message);
+                SerialPort1Status = DataStatus_t.WaitingForReply;
             }
             pingTimeout.Stop();
             pingTimeout.Reset();
             pingTimeout.Start();
             pcToolState = PCTOOL_State_t.SYSTEM_CHECK_CONNECTION;
         }
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            /*textBox3.Text = "START" + pcToolState.ToString();
-            switch (pcToolState)
-            {
-                case PCTOOL_State_t.SYSTEM_INIT: 
-                    break;
-                case PCTOOL_State_t.SYSTEM_CHECK_CONNECTION:
-                    if(pingTimeout.ElapsedMilliseconds > 100 )
-                    {
-                        pcToolState = PCTOOL_State_t.SYSTEM_DISCONNECTION;
-                        pingTimeout.Stop();
-                        pingTimeout.Reset();
-                    }
-                    break;
-                case PCTOOL_State_t.SYSTEM_RUN:
-                    if (checkTimeout.ElapsedMilliseconds > 2000)
-                    {
-                        pcToolState = PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION;
-                        checkTimeout.Reset();
-                    }
-                    break;
-                case PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION:
-                    RequestConnection();
-                    break;
-                case PCTOOL_State_t.SYSTEM_DISCONNECTION:
-                    statusConnectBtn.BackColor = Color.Red;
-                    timer2.Enabled = true; 
-                    break;
-                default:
-                    break;
-            }
-            switch (SendState)
-            {
-                case SendRequest_t.PC_TOOL_SENDING:
-                    SendRequestThresshold();
-                    break;
-                case SendRequest_t.PC_TOOL_SEND_IDLE:
-                    break;
-                case SendRequest_t.PC_TOOL_SEND_DONE:
-                    break;
-            }*/
-        }
         public void PCTOOL_MainFunction(string str)
         {
             i++;
             textBox2.Text = str + i.ToString();
             checkTimeout.Restart();
-            timer1.Enabled = false;
-            switch (pcToolState)
-            {
-                case PCTOOL_State_t.SYSTEM_INIT:
-                    break;
-                case PCTOOL_State_t.SYSTEM_CHECK_CONNECTION:
-                    if (String.Compare(str, "A0-00-0F") == 0 && pingTimeout.ElapsedMilliseconds < 100 )
-                    {
-                        pingLabel.Text = "ping :"+pingTimeout.ElapsedMilliseconds.ToString() +" ms";
-                        pcToolState = PCTOOL_State_t.SYSTEM_RUN;
-                        timer2.Enabled = false;
-                        statusConnectBtn.BackColor = Color.Green;
-                    } 
-                    break;
-                case PCTOOL_State_t.SYSTEM_RUN:
-                    break;
-                case PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION:
-                    requestNode = RequestNode_t.NODE_DEINIT;
-                    if(string.Compare(str,"A1-00-FF") == 0)
-                    {
-                        statusNode1Btn.BackColor = Color.Green;
-                    }
-                    else if ( IndexOfNode == 1)
-                    {
-                        statusNode1Btn.BackColor = Color.Red;
-                    }
-                    if (string.Compare(str, "A2-00-FF") == 0)
-                    {
-                        statusNode2Btn.BackColor = Color.Green;
-                    }
-                    else if ( IndexOfNode == 2)
-                    {
-                        statusNode1Btn.BackColor = Color.Red;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            switch(SendState)
-            {
-                case SendRequest_t.PC_TOOL_SENDING:
-                    break;
-                case SendRequest_t.PC_TOOL_SEND_IDLE:
-                    if (String.Compare(str, "Confirm") == 0 && pingTimeout.ElapsedMilliseconds < 100)
-                    {
-                        SendState = SendRequest_t.PC_TOOL_SEND_DONE;
-                    }
-                    break;
-                case SendRequest_t.PC_TOOL_SEND_DONE:
-                    break;
-            }
-            timer1.Enabled = true;
-            pingTimeout.Reset();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             originalImag = volang_picturebox.Image;
-            if (serialPort1.IsOpen == true)
-            {
-                statusConnectBtn.BackColor = Color.Green;
-            }
-            else
-            {
-                statusConnectBtn.BackColor = Color.Red;
-            }
             serialPort1.PortName = "COM9";
             serialPort1.BaudRate = 9600;
             StartThread();
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox2_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void trackBar2_Scroll(object sender, EventArgs e)
-        {
-            g_Distance = trackBar2.Value;
-            distanceTB.Text = g_Distance.ToString() + "cm";
-            if(g_Distance < g_WarningDistance)
-            {
-                button5.BackColor = Color.Red;
-            }
-            else
-            {
-                button5.BackColor = Color.Green;
-            }
         }
         void SendRequestThresshold()
         {
             if (pcToolState == PCTOOL_State_t.SYSTEM_RUN)
             {
-                if(last_Infor.Distance != g_WarningDistance)
+                if(last_InforWarning.Distance != InforWarning.Distance)
                 {
                     serialPort1.Write("Node1\n");
                 }
-                if (last_Infor.Rotaion != g_WarningRotation)
+                if (last_InforWarning.Rotaion != InforWarning.Rotaion)
                 {
                     serialPort1.Write("Node2\n");
                 }
@@ -373,12 +253,12 @@ namespace PC_TOOLV2
         }
         private void UpdateWarningDistance(object sender, InformationWarning setup)
         {
-            last_Infor.Distance = g_WarningDistance;
-            last_Infor.Rotaion = g_WarningRotation;
-            g_WarningDistance = setup.Distance;
-            g_WarningRotation = setup.Rotaion;
-            distanceWariningTB.Text = "Safety:" + g_WarningDistance.ToString() + "cm";
-            rotationWarningTb.Text = "Safety: ±" + g_WarningRotation.ToString() + "°";
+            last_InforWarning.Distance = InforWarning.Distance;
+            last_InforWarning.Rotaion = InforWarning.Rotaion;
+            InforWarning.Distance = setup.Distance;
+            InforWarning.Rotaion = setup.Rotaion;
+            distanceWariningTB.Text = "Safety:" + InforWarning.Distance.ToString() + "cm";
+            rotationWarningTb.Text = "Safety: ±" + InforWarning.Rotaion.ToString() + "°";
             SendState = SendRequest_t.PC_TOOL_SENDING;
         }
         private void UpdateSerialPort(object sender, SerialPort Sender_SerialPort)
@@ -388,7 +268,6 @@ namespace PC_TOOLV2
             g_SerialPort = Sender_SerialPort as SerialPort;
             if ( g_lastSerialPort != g_SerialPort)
             {
-                timer1.Enabled = false;
                 timer2.Enabled = false;
                 if(serialPort1.IsOpen == true)
                 {
@@ -396,14 +275,15 @@ namespace PC_TOOLV2
                 }
                 portnameLable.Text = "Port :" + g_SerialPort.PortName.ToString();
                 serialPort1.PortName = g_SerialPort.PortName;
-                timer1.Enabled = true;
             }
             serailPort1_Config = PortState_t.PORT_INIT;
         }
         private void SendataViaSerialPort(string s_data)
         {
-            s_data = s_data + '\n' + '\0';
-            serialPort1.Write(s_data);
+            if(serialPort1.IsOpen)
+            {
+                serialPort1.WriteLine(s_data);
+            }
         }
         public void ParseData(string str)
         {
@@ -411,6 +291,7 @@ namespace PC_TOOLV2
         }
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
+            SerialPort1Status = DataStatus_t.ResponseReceived;
             pingTimeout.Stop();
             g_DataReceive = "";
             g_DataReceive = serialPort1.ReadLine();
