@@ -16,20 +16,16 @@ namespace PC_TOOLV2
 {
     public partial class Form1 : Form
     {
-        int NumberOfNode = 2;
-        int IndexOfNode = 1; 
-        int i = 0;
-        Thread MainFunctionThread = null;
-        InformationWarning last_InforWarning = new InformationWarning() { Distance = 0, Rotaion = 0 };
-        InformationWarning InforWarning = new InformationWarning() { Distance = 120, Rotaion = 30 };
-        private string g_DataReceive = null;
-        private Image originalImag = null;
-        private SerialPort g_SerialPort;
-        private SerialPort g_lastSerialPort;
-        /*Đo thời gian nhận được các bản tin */
-        Stopwatch checkTimeout = new Stopwatch();
-        /*Đo thời gian từ lúc gửi bản tin tới lúc nhận bản tin */
-        Stopwatch pingTimeout = new Stopwatch();
+        private enum PCTOOL_State_t
+        {
+            SYSTEM_INIT,  /*Trạng thái cài đặt hệ thống, yêu cầu kết nối ban đầu   */
+            SYSTEM_CHECK_CONNECTION, /* Trạng thái kiểm tra kết nối, sau khi gửi đi gói tin Ping */
+            SYSTEM_REQUEST_CHECK_CONNECTION, /* Trạng thái yêu cầu kiểm tra kết nối, ví dụ sau khi kh nhận dc bản tin nào trong 1s */
+            SYSTEM_RUN, /*Trạng thái hoạt động bình thường */
+            SYSTEM_DISCONNECTION, /*Trạng thái mất kết nối */
+            SYSTEM_SENT_THRESSHOLD, /*Trang thai gui ban tin cap nhat thresshold*/
+            SYSTEM_SENT_CONNECT_TO_NODE,
+        }
         private enum SendRequest_t
         {
             PC_TOOL_SEND_IDLE,
@@ -53,20 +49,25 @@ namespace PC_TOOLV2
             WaitingForReply,
             ResponseReceived
         }
+        int NumberOfNode = 2;
+        int IndexOfNode = 1; 
+        int i = 0;
+        Thread MainFunctionThread = null;
+        Thread InitConnectionThread = null;
+        InformationWarning last_InforWarning = new InformationWarning() { Distance = 0, Rotaion = 0 };
+        InformationWarning InforWarning = new InformationWarning() { Distance = 120, Rotaion = 30 };
+        private string g_DataReceive = null;
+        private Image originalImag = null;
+        private SerialPort g_SerialPort;
+        private SerialPort g_lastSerialPort;
+        /*Đo thời gian nhận được các bản tin */
+        Stopwatch checkTimeout = new Stopwatch();
+        /*Đo thời gian từ lúc gửi bản tin tới lúc nhận bản tin */
+        Stopwatch pingTimeout = new Stopwatch();
         RequestNode_t requestNode = RequestNode_t.NODE_DEINIT;
         SendRequest_t SendState = SendRequest_t.PC_TOOL_SEND_IDLE;
         PortState_t serailPort1_Config = PortState_t.PORT_INIT;
         DataStatus_t SerialPort1Status = DataStatus_t.NotSent;
-        private enum PCTOOL_State_t
-        {
-            SYSTEM_INIT,  /*Trạng thái cài đặt hệ thống, yêu cầu kết nối ban đầu   */
-            SYSTEM_CHECK_CONNECTION, /* Trạng thái kiểm tra kết nối, sau khi gửi đi gói tin Ping */
-            SYSTEM_REQUEST_CHECK_CONNECTION, /* Trạng thái yêu cầu kiểm tra kết nối, ví dụ sau khi kh nhận dc bản tin nào trong 1s */
-            SYSTEM_RUN, /*Trạng thái hoạt động bình thường */
-            SYSTEM_DISCONNECTION, /*Trạng thái mất kết nối */
-            SYSTEM_SENT_THRESSHOLD, /*Trang thai gui ban tin cap nhat thresshold*/
-            SYSTEM_SENT_CONNECT_TO_NODE,
-        }
         /*Init varialbe state to handle */
         PCTOOL_State_t pcToolState = PCTOOL_State_t.SYSTEM_INIT;
         public Form1()
@@ -79,20 +80,12 @@ namespace PC_TOOLV2
             MainFunctionThread.IsBackground = true;
             MainFunctionThread.Start();
         }
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            base.OnFormClosing(e);
-            if(MainFunctionThread != null && MainFunctionThread.IsAlive)
-            {
-                MainFunctionThread.Abort();
-            }
-        }
-        private void MainFunction()
+        private void InitSystem(string[] args)
         {
             RequestConnection("A0-00-00");
             while (true)
             {
-                this.Invoke(new Action(() => { textBox3.Text = "START" + pcToolState.ToString();}));
+                this.Invoke(new Action(() => { textBox3.Text = "START" + pcToolState.ToString(); }));
                 switch (pcToolState)
                 {
                     case PCTOOL_State_t.SYSTEM_INIT:
@@ -115,25 +108,10 @@ namespace PC_TOOLV2
                         }
                         break;
                     case PCTOOL_State_t.SYSTEM_RUN:
-
                         if (checkTimeout.ElapsedMilliseconds > 2000)
                         {
                             pcToolState = PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION;
                             checkTimeout.Reset();
-                        }
-                        if (requestNode == RequestNode_t.NODE_DEINIT && IndexOfNode == 1 )
-                        {
-                            RequestConnection("A1-00-00");
-                            pcToolState = PCTOOL_State_t.SYSTEM_SENT_CONNECT_TO_NODE;
-                            IndexOfNode++;
-                            requestNode = RequestNode_t.NODE_INIT;
-                        }
-                        if (requestNode == RequestNode_t.NODE_DEINIT && IndexOfNode == 2 )
-                        {
-                            RequestConnection("A2-00-00");
-                            pcToolState = PCTOOL_State_t.SYSTEM_SENT_CONNECT_TO_NODE;
-                            IndexOfNode++;
-                            requestNode = RequestNode_t.NODE_INIT;
                         }
                         break;
                     case PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION:
@@ -147,7 +125,144 @@ namespace PC_TOOLV2
                         }));
                         break;
                     case PCTOOL_State_t.SYSTEM_SENT_CONNECT_TO_NODE:
+                        pcToolState = PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION;
+                        break;
+                    default:
+                        break;
+                }
+                Thread.Sleep(10);
+            }
+        }
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            if(MainFunctionThread != null && MainFunctionThread.IsAlive)
+            {
+                MainFunctionThread.Abort();
+            }
+        }
+        private void MainFunction()
+        {
+            while (true)
+            {
+                this.Invoke(new Action(() => { textBox3.Text = "START" + pcToolState.ToString();}));
+                switch (pcToolState)
+                {
+                    case PCTOOL_State_t.SYSTEM_INIT:
+                        if (SerialPort1Status == DataStatus_t.NotSent )
+                        {
+                            RequestConnection("A0-00-00");
+                        }
+                        else if (SerialPort1Status == DataStatus_t.ResponseReceived || pingTimeout.ElapsedMilliseconds > 100)
+                        {
+                            if (pingTimeout.ElapsedMilliseconds > 100)
+                            {
+                                pcToolState = PCTOOL_State_t.SYSTEM_DISCONNECTION;
+                                pingTimeout.Reset();
+                                this.Invoke(new Action(() => { pingLabel.Text = "ping : 1000 "; }));                              
+                            }
+                            if (SerialPort1Status == DataStatus_t.ResponseReceived && string.Compare(g_DataReceive, "A0-00-0F") == 0 && pingTimeout.ElapsedMilliseconds < 100)
+                            {
+                                this.Invoke(new Action(() => { pingLabel.Text = "ping :" + pingTimeout.ElapsedMilliseconds.ToString() + " ms"; }));
+                                pcToolState = PCTOOL_State_t.SYSTEM_SENT_CONNECT_TO_NODE;
+                                statusConnectBtn.BackColor = Color.Green;
+                                pingTimeout.Reset();
+                            }
+                            SerialPort1Status = DataStatus_t.NotSent;
+                        }
+                        break;
+                    case PCTOOL_State_t.SYSTEM_CHECK_CONNECTION:
+                        break;
+                    case PCTOOL_State_t.SYSTEM_RUN:
+                        if (checkTimeout.ElapsedMilliseconds > 2000)
+                        {
                             pcToolState = PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION;
+                            checkTimeout.Reset();
+                        }
+                        break;
+                    case PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION:
+                        if (SerialPort1Status == DataStatus_t.NotSent)
+                        {
+                            RequestConnection("A0-00-00");
+                        }
+                        else if (SerialPort1Status == DataStatus_t.ResponseReceived || pingTimeout.ElapsedMilliseconds > 100)
+                        {
+                            if (pingTimeout.ElapsedMilliseconds > 100)
+                            {
+                                pcToolState = PCTOOL_State_t.SYSTEM_DISCONNECTION;
+                                pingTimeout.Stop();
+                                pingTimeout.Reset();
+                                this.Invoke(new Action(() => { pingLabel.Text = "ping : 1000 "; }));
+                            }
+                            if (SerialPort1Status == DataStatus_t.ResponseReceived && string.Compare(g_DataReceive, "A0-00-0F") == 0 && pingTimeout.ElapsedMilliseconds < 100)
+                            {
+                                this.Invoke(new Action(() => { pingLabel.Text = "ping :" + pingTimeout.ElapsedMilliseconds.ToString() + " ms"; }));
+                                pcToolState = PCTOOL_State_t.SYSTEM_RUN;
+                                timer2.Enabled = false;
+                                statusConnectBtn.BackColor = Color.Green;
+                                pingTimeout.Reset();
+                            }
+                            SerialPort1Status = DataStatus_t.NotSent;
+                        }
+                        break;
+                    case PCTOOL_State_t.SYSTEM_DISCONNECTION:
+                        this.Invoke(new Action(() =>
+                        {
+                            statusConnectBtn.BackColor = Color.Red;
+                            timer2.Enabled = true;
+                        }));
+                        break;
+                    case PCTOOL_State_t.SYSTEM_SENT_CONNECT_TO_NODE:
+                        switch (IndexOfNode)
+                        {
+                            case 1:
+                                if (SerialPort1Status == DataStatus_t.NotSent)
+                                {
+                                    RequestConnection("A1-00-00");
+                                }
+                                else if (SerialPort1Status == DataStatus_t.ResponseReceived || pingTimeout.ElapsedMilliseconds > 100)
+                                {
+                                    if (pingTimeout.ElapsedMilliseconds > 100)
+                                    {
+                                        pingTimeout.Reset();
+                                        this.Invoke(new Action(() => { statusNode1Btn.BackColor = Color.Red; }));
+                                    }
+                                    if (SerialPort1Status == DataStatus_t.ResponseReceived && string.Compare(g_DataReceive, "A1-00-0F") == 0)
+                                    {
+                                        pingTimeout.Reset();
+                                        this.Invoke(new Action(() => { statusNode1Btn.BackColor = Color.Green; }));
+                                    }
+                                    IndexOfNode++;
+                                    SerialPort1Status = DataStatus_t.NotSent;
+                                }
+                                break;
+                            case 2:
+                                if (SerialPort1Status == DataStatus_t.NotSent)
+                                {
+                                    RequestConnection("A2-00-00");
+                                }
+                                else if (SerialPort1Status == DataStatus_t.ResponseReceived || pingTimeout.ElapsedMilliseconds > 100)
+                                {
+                                    if (pingTimeout.ElapsedMilliseconds > 100)
+                                    {
+                                        pingTimeout.Reset();
+                                        this.Invoke(new Action(() => { statusNode2Btn.BackColor = Color.Red; }));
+                                    }
+                                    if (SerialPort1Status == DataStatus_t.ResponseReceived && string.Compare(g_DataReceive, "A2-00-0F") == 0)
+                                    {
+                                        pingTimeout.Reset();
+                                        this.Invoke(new Action(() => { statusNode2Btn.BackColor = Color.Green; }));
+                                    }
+                                    IndexOfNode++;
+                                    SerialPort1Status = DataStatus_t.NotSent;
+                                }
+                                break;
+                            case 3:
+                                pcToolState = PCTOOL_State_t.SYSTEM_RUN;
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                     default:
                         break;
@@ -158,7 +273,7 @@ namespace PC_TOOLV2
                         SendRequestThresshold();
                         break;
                     case SendRequest_t.PC_TOOL_SEND_IDLE:
-                        if (SerialPort1Status == DataStatus_t.ResponseReceived && String.Compare(g_DataReceive, "Confirm") == 0 && pingTimeout.ElapsedMilliseconds < 100)
+                        if (SerialPort1Status == DataStatus_t.ResponseReceived && String.Compare(g_DataReceive, "B0-00-0F") == 0 && pingTimeout.ElapsedMilliseconds < 100)
                         {
                             SendState = SendRequest_t.PC_TOOL_SEND_DONE;
                         }
@@ -220,13 +335,13 @@ namespace PC_TOOLV2
             pingTimeout.Stop();
             pingTimeout.Reset();
             pingTimeout.Start();
-            pcToolState = PCTOOL_State_t.SYSTEM_CHECK_CONNECTION;
         }
         public void PCTOOL_MainFunction(string str)
         {
             i++;
             textBox2.Text = str + i.ToString();
             checkTimeout.Restart();
+            SerialPort1Status = DataStatus_t.ResponseReceived;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -242,11 +357,11 @@ namespace PC_TOOLV2
             {
                 if(last_InforWarning.Distance != InforWarning.Distance)
                 {
-                    serialPort1.Write("Node1\n");
+                    serialPort1.Write("A2-00-01\n");
                 }
                 if (last_InforWarning.Rotaion != InforWarning.Rotaion)
                 {
-                    serialPort1.Write("Node2\n");
+                    serialPort1.Write("A2-00-02\n");
                 }
                 SendState = SendRequest_t.PC_TOOL_SEND_IDLE;
             }
@@ -291,7 +406,6 @@ namespace PC_TOOLV2
         }
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
-            SerialPort1Status = DataStatus_t.ResponseReceived;
             pingTimeout.Stop();
             g_DataReceive = "";
             g_DataReceive = serialPort1.ReadLine();
