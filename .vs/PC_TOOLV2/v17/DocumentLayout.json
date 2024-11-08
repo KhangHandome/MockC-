@@ -3,11 +3,11 @@
   "WorkspaceRootPath": "D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\pc_toolv2\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|d:\\fpt software\\up skills\\mock\\pc_tool_git\\pc_toolv2\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|solutionrelative:pc_toolv2\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|d:\\fpt software\\up skills\\mock\\pc_tool_git\\pc_toolv2\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\pc_toolv2\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|solutionrelative:pc_toolv2\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -15,7 +15,7 @@
       "RelativeMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|solutionrelative:pc_toolv2\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|d:\\fpt software\\up skills\\mock\\pc_tool_git\\pc_toolv2\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\pc_toolv2\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{FDEED58A-192E-4F42-92D9-21D6F73C1267}|PC_TOOLV2\\PC_TOOLV2.csproj|solutionrelative:pc_toolv2\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
@@ -26,8 +26,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\PC_TOOLV2\\Form1.cs",
+              "RelativeDocumentMoniker": "PC_TOOLV2\\Form1.cs",
+              "ToolTip": "D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\PC_TOOLV2\\Form1.cs",
+              "RelativeToolTip": "PC_TOOLV2\\Form1.cs",
+              "ViewState": "AQIAAFkBAAAAAAAAAAAAAGEBAAANAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-07T15:44:30.323Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
@@ -42,8 +55,7 @@
               "RelativeToolTip": "PC_TOOLV2\\Program.cs",
               "ViewState": "AQIAAAMAAAAAAAAAAAAawBIAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-07T23:13:47.386Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-11-07T23:13:47.386Z"
             },
             {
               "$type": "Document",
@@ -68,19 +80,6 @@
               "ViewState": "AQIAALAAAAAAAAAAAAAowLEAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-07T15:45:44.686Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\PC_TOOLV2\\Form1.cs",
-              "RelativeDocumentMoniker": "PC_TOOLV2\\Form1.cs",
-              "ToolTip": "D:\\FPT SOFTWARE\\UP SKILLS\\Mock\\PC_TOOL_GIT\\PC_TOOLV2\\Form1.cs",
-              "RelativeToolTip": "PC_TOOLV2\\Form1.cs",
-              "ViewState": "AQIAAFcBAAAAAAAAAAAawGEBAAANAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-07T15:44:30.323Z",
               "EditorCaption": ""
             }
           ]
