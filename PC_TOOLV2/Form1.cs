@@ -70,6 +70,11 @@ namespace PC_TOOLV2
         DataStatus_t SerialPort1Status = DataStatus_t.NotSent;
         /*Init varialbe state to handle */
         PCTOOL_State_t pcToolState = PCTOOL_State_t.SYSTEM_INIT;
+        DataNode dataNode = new DataNode();
+        string ID_Node1 = "C0";
+        string ID_Node2 = "D0";
+        int Rotation = 0; 
+        Queue<string> myData = new Queue<string>();
         public Form1()
         {
             InitializeComponent();
@@ -174,6 +179,88 @@ namespace PC_TOOLV2
                     case PCTOOL_State_t.SYSTEM_CHECK_CONNECTION:
                         break;
                     case PCTOOL_State_t.SYSTEM_RUN:
+                        if(SerialPort1Status == DataStatus_t.ResponseReceived)
+                        {
+                            ParseData(g_DataReceive);
+                            if ( String.Compare(dataNode.ID,ID_Node2) == 0 )
+                            {
+                                if (String.Compare(dataNode.Data, "FFF") == 0)
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        statusNode1Btn.BackColor = Color.Red;
+                                        rotationTB.Text = "Disconnect to node 1"; ;
+                                    }));
+                                }
+                                else
+                                {
+                                    Int32.TryParse(dataNode.Data, out Rotation);
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        statusNode1Btn.BackColor = Color.Green;
+                                        rotationTB.Text = dataNode.Data;
+                                        volang_picturebox.Image = RotateImage(originalImag, Rotation);
+                                    }));
+    
+                                }  
+                                if(String.Compare(dataNode.Status,"FF") == 0)
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        RotationWarningBtn.BackColor = Color.Red;
+                                    }));
+
+                                }
+                                else
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        RotationWarningBtn.BackColor = Color.Green;
+                                    }));
+
+                                }
+                                serialPort1.WriteLine("C0-00-0F");
+                            }
+                            if (String.Compare(dataNode.ID, ID_Node1) == 0)
+                            {
+                                if (String.Compare(dataNode.Data, "FFF") == 0)
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        statusNode2Btn.BackColor = Color.Red;
+                                        distanceTB.Text = "Disconnect to node 2";
+                                    }));
+                                }
+                                else
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        statusNode2Btn.BackColor = Color.Green;
+                                        distanceTB.Text = dataNode.Data;
+                                    }));
+                                }
+                                if (String.Compare(dataNode.Status, "FF") == 0)
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        DistanceWarningBtn.BackColor = Color.Red;
+                                    }));
+
+                                }
+                                else
+                                {
+                                    this.Invoke(new Action(() =>
+                                    {
+                                        DistanceWarningBtn.BackColor = Color.Green;
+                                    }));
+                                }
+                                serialPort1.WriteLine("D0-00-0F");
+                            }
+                            dataNode.ID = "";
+                            dataNode.Data = "";
+                            dataNode.Status = "";
+                            SerialPort1Status = DataStatus_t.NotSent;
+                        }
                         if (checkTimeout.ElapsedMilliseconds > 2000)
                         {
                             pcToolState = PCTOOL_State_t.SYSTEM_REQUEST_CHECK_CONNECTION;
@@ -209,8 +296,29 @@ namespace PC_TOOLV2
                         this.Invoke(new Action(() =>
                         {
                             statusConnectBtn.BackColor = Color.Red;
-                            timer2.Enabled = true;
+                            if(timer2.Enabled != true)
+                            {
+                                timer2.Enabled = true;
+                            }
                         }));
+                        if (SerialPort1Status == DataStatus_t.ResponseReceived || pingTimeout.ElapsedMilliseconds > 100)
+                        {
+                            if (pingTimeout.ElapsedMilliseconds > 100)
+                            {
+                                pingTimeout.Stop();
+                                pingTimeout.Reset();
+                                this.Invoke(new Action(() => { pingLabel.Text = "ping : 1000 "; }));
+                            }
+                            if (SerialPort1Status == DataStatus_t.ResponseReceived && string.Compare(g_DataReceive, "A0-00-0F") == 0 && pingTimeout.ElapsedMilliseconds < 100)
+                            {
+                                this.Invoke(new Action(() => { pingLabel.Text = "ping :" + pingTimeout.ElapsedMilliseconds.ToString() + " ms"; }));
+                                pcToolState = PCTOOL_State_t.SYSTEM_RUN;
+                                timer2.Enabled = false;
+                                statusConnectBtn.BackColor = Color.Green;
+                                pingTimeout.Reset();
+                            }
+                            SerialPort1Status = DataStatus_t.NotSent;
+                        }
                         break;
                     case PCTOOL_State_t.SYSTEM_SENT_CONNECT_TO_NODE:
                         switch (IndexOfNode)
@@ -357,11 +465,11 @@ namespace PC_TOOLV2
             {
                 if(last_InforWarning.Distance != InforWarning.Distance)
                 {
-                    serialPort1.Write("A2-00-01\n");
+                    serialPort1.WriteLine("A2-00-01");
                 }
                 if (last_InforWarning.Rotaion != InforWarning.Rotaion)
                 {
-                    serialPort1.Write("A2-00-02\n");
+                    serialPort1.WriteLine("A2-00-02");
                 }
                 SendState = SendRequest_t.PC_TOOL_SEND_IDLE;
             }
@@ -402,13 +510,23 @@ namespace PC_TOOLV2
         }
         public void ParseData(string str)
         {
-            textBox2.Text = str;
+            string[] data_parse = str.Split('-');
+            dataNode.ID = data_parse[0];
+            dataNode.Data = data_parse[1];
+            dataNode.Status = data_parse[2];
         }
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
             pingTimeout.Stop();
             g_DataReceive = "";
-            g_DataReceive = serialPort1.ReadLine();
+            try
+            {
+                g_DataReceive = serialPort1.ReadLine();             
+            }
+            catch ( Exception ex)
+            {
+
+            }
             this.Invoke(new Action(() => PCTOOL_MainFunction(g_DataReceive)));
         }
 

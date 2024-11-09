@@ -34,7 +34,7 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.statusConnectBtn = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.rotationTB = new System.Windows.Forms.TextBox();
             this.distanceTB = new System.Windows.Forms.TextBox();
             this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.SettingBTN = new System.Windows.Forms.Button();
@@ -42,12 +42,12 @@
             this.statusNode1Btn = new System.Windows.Forms.Button();
             this.statusNode2Btn = new System.Windows.Forms.Button();
             this.distanceWariningTB = new System.Windows.Forms.TextBox();
-            this.button5 = new System.Windows.Forms.Button();
+            this.RotationWarningBtn = new System.Windows.Forms.Button();
             this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
             this.portnameLable = new System.Windows.Forms.Label();
             this.rotationWarningTb = new System.Windows.Forms.TextBox();
             this.timer2 = new System.Windows.Forms.Timer(this.components);
-            this.button1 = new System.Windows.Forms.Button();
+            this.DistanceWarningBtn = new System.Windows.Forms.Button();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.pingLabel = new System.Windows.Forms.Label();
@@ -96,15 +96,15 @@
             this.statusConnectBtn.TabIndex = 3;
             this.statusConnectBtn.UseVisualStyleBackColor = false;
             // 
-            // textBox1
+            // rotationTB
             // 
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(182, 524);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 38);
-            this.textBox1.TabIndex = 5;
-            this.textBox1.Text = "0°";
-            this.textBox1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.rotationTB.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rotationTB.Location = new System.Drawing.Point(182, 524);
+            this.rotationTB.Name = "rotationTB";
+            this.rotationTB.Size = new System.Drawing.Size(100, 38);
+            this.rotationTB.TabIndex = 5;
+            this.rotationTB.Text = "0°";
+            this.rotationTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // distanceTB
             // 
@@ -175,14 +175,14 @@
             this.distanceWariningTB.Text = "Safety : 120cm";
             this.distanceWariningTB.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // button5
+            // RotationWarningBtn
             // 
-            this.button5.BackColor = System.Drawing.Color.Red;
-            this.button5.Location = new System.Drawing.Point(182, 494);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(107, 23);
-            this.button5.TabIndex = 15;
-            this.button5.UseVisualStyleBackColor = false;
+            this.RotationWarningBtn.BackColor = System.Drawing.Color.Red;
+            this.RotationWarningBtn.Location = new System.Drawing.Point(182, 494);
+            this.RotationWarningBtn.Name = "RotationWarningBtn";
+            this.RotationWarningBtn.Size = new System.Drawing.Size(107, 23);
+            this.RotationWarningBtn.TabIndex = 15;
+            this.RotationWarningBtn.UseVisualStyleBackColor = false;
             // 
             // serialPort1
             // 
@@ -212,14 +212,14 @@
             this.timer2.Interval = 1000;
             this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
             // 
-            // button1
+            // DistanceWarningBtn
             // 
-            this.button1.BackColor = System.Drawing.Color.Red;
-            this.button1.Location = new System.Drawing.Point(676, 494);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(107, 23);
-            this.button1.TabIndex = 18;
-            this.button1.UseVisualStyleBackColor = false;
+            this.DistanceWarningBtn.BackColor = System.Drawing.Color.Red;
+            this.DistanceWarningBtn.Location = new System.Drawing.Point(676, 494);
+            this.DistanceWarningBtn.Name = "DistanceWarningBtn";
+            this.DistanceWarningBtn.Size = new System.Drawing.Size(107, 23);
+            this.DistanceWarningBtn.TabIndex = 18;
+            this.DistanceWarningBtn.UseVisualStyleBackColor = false;
             // 
             // textBox2
             // 
@@ -253,10 +253,10 @@
             this.Controls.Add(this.pingLabel);
             this.Controls.Add(this.textBox3);
             this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.DistanceWarningBtn);
             this.Controls.Add(this.rotationWarningTb);
             this.Controls.Add(this.portnameLable);
-            this.Controls.Add(this.button5);
+            this.Controls.Add(this.RotationWarningBtn);
             this.Controls.Add(this.distanceWariningTB);
             this.Controls.Add(this.statusNode2Btn);
             this.Controls.Add(this.statusNode1Btn);
@@ -264,7 +264,7 @@
             this.Controls.Add(this.pictureBox3);
             this.Controls.Add(this.SettingBTN);
             this.Controls.Add(this.distanceTB);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.rotationTB);
             this.Controls.Add(this.statusConnectBtn);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox2);
@@ -286,7 +286,7 @@
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button statusConnectBtn;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox rotationTB;
         private System.Windows.Forms.TextBox distanceTB;
         private System.Windows.Forms.PictureBox pictureBox3;
         private System.Windows.Forms.Button SettingBTN;
@@ -294,12 +294,12 @@
         private System.Windows.Forms.Button statusNode1Btn;
         private System.Windows.Forms.Button statusNode2Btn;
         private System.Windows.Forms.TextBox distanceWariningTB;
-        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button RotationWarningBtn;
         private System.IO.Ports.SerialPort serialPort1;
         private System.Windows.Forms.Label portnameLable;
         private System.Windows.Forms.TextBox rotationWarningTb;
         private System.Windows.Forms.Timer timer2;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button DistanceWarningBtn;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.Label pingLabel;
