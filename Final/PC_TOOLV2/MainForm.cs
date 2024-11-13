@@ -189,7 +189,8 @@ namespace PC_TOOLV2
             if (dataReceivedQueue.Count > 0)
             {
                 tpmMessage = dataReceivedQueue.Dequeue();
-                if(String.Compare(tpmMessage.Id,IdDataNode1) == 0 )
+                SendResponseToForwader(tpmMessage.Id, "FFFF");
+                if (String.Compare(tpmMessage.Id,IdDataNode1) == 0 )
                 {
                     if(String.Compare(tpmMessage.Message,"FF") == 0 )
                     {
@@ -299,6 +300,18 @@ namespace PC_TOOLV2
             IdFilterResponse = "";
             mappingData.Remove(IdMappingData);
             return retVal;
+        }
+        private void SendResponseToForwader(string ID, string Data)
+        {
+            string message = ID + "-" + Data;
+            if (Forwader.IsOpen == true)
+            {
+                Forwader.WriteLine(message);
+            }
+            else
+            {
+                pcToolState = PCToolState_t.PCTool_Reconnect;
+            }
         }
         private void SendRequestToNode(string IdNode, string Data)
         {
