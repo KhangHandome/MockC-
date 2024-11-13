@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-
+using System.IO;
 namespace PC_TOOLV2
 {
     public partial class MainForm : Form
@@ -42,6 +42,7 @@ namespace PC_TOOLV2
         private Stopwatch TimerCounter = new Stopwatch();
         private Stopwatch checkTimeout = new Stopwatch();
         private Stopwatch pingTimeout = new Stopwatch();
+        private string filePath = "./../../Config.txt";
         private bool isResponExist(int ID)
         {
             bool retVal = true;
@@ -67,7 +68,14 @@ namespace PC_TOOLV2
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            string buffer = null;
             originalImag = volang_picturebox.Image;
+            if(File.Exists(filePath)  == true)
+            {
+                buffer = File.ReadAllText(filePath);
+                int.TryParse(buffer.Split(':')[0], out Data_Warning.Rotaion);
+                int.TryParse(buffer.Split(':')[1], out Data_Warning.Distance);
+            }
             rotationWarningLabel.Text = "Safety: " + Data_Warning.Rotaion.ToString() + "°";
             distanceWarningLabel.Text = "Safety: " + Data_Warning.Distance.ToString() + "cm";
             serialPort_Current.Baudrate = 9600;
@@ -365,6 +373,7 @@ namespace PC_TOOLV2
             Data_Warning.Distance = setup.Distance;
             rotationWarningLabel.Text = "Safety: " + Data_Warning.Rotaion.ToString() + "°";
             distanceWarningLabel.Text = "Safety: " + Data_Warning.Distance.ToString() + "cm";
+            File.WriteAllText(filePath, Data_Warning.Rotaion.ToString() + ":" + Data_Warning.Distance.ToString());
         }
         private void UpdateSerialPort(object sender, SerialPortInfor_t SerialPortInfor)
         {
