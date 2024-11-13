@@ -13,11 +13,18 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 namespace PC_TOOLV2
 {
     public partial class AdvanceSetup : Form
+
     {
+        SerialPortInfor_t SerialPort_infor = new SerialPortInfor_t();
         /*
             Đăng ký sự kiện cho form 2 
          */
         public event EventHandler<SerialPortInfor_t> UpdateSerialPort;
+        public void ReceivedSerialPort(SerialPortInfor_t serialPort)
+        {
+            SerialPort_infor.PortName = serialPort.PortName;
+            SerialPort_infor.Baudrate = serialPort.Baudrate;
+        }
         private Stopwatch stopwatch;
         public AdvanceSetup()
         {
@@ -32,16 +39,15 @@ namespace PC_TOOLV2
             string[] porrName = SerialPort.GetPortNames();
             listPortCb.DataSource = porrName;
             listBaundrate.DataSource = baudrate;
+            listPortCb.SelectedItem = SerialPort_infor.PortName;
+            listBaundrate.SelectedItem = SerialPort_infor.Baudrate.ToString();
         }
   
         private void connectBtn_Click(object sender, EventArgs e)
         {
-            Int32 baundrate = 0;
-            SerialPortInfor_t SerialPort = new SerialPortInfor_t();
-            Int32.TryParse(listBaundrate.Text.ToString(), out baundrate);
-            SerialPort.PortName = listPortCb.SelectedValue.ToString();
-            SerialPort.Baudrate = baundrate;
-            UpdateSerialPort?.Invoke(this, SerialPort);
+            Int32.TryParse(listBaundrate.Text.ToString(), out SerialPort_infor.Baudrate);
+            SerialPort_infor.PortName = listPortCb.SelectedValue.ToString();
+            UpdateSerialPort?.Invoke(this, SerialPort_infor);
             this.Close();
         }
 

@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PC_TOOLV2
@@ -69,8 +70,10 @@ namespace PC_TOOLV2
             originalImag = volang_picturebox.Image;
             rotationWarningLabel.Text = "Safety: " + Data_Warning.Rotaion.ToString() + "°";
             distanceWarningLabel.Text = "Safety: " + Data_Warning.Distance.ToString() + "cm";
-            Forwader.PortName = "COM9";
-            Forwader.BaudRate = 9600;
+            serialPort_Current.Baudrate = 9600;
+            serialPort_Current.PortName = "COM9";
+            Forwader.PortName = serialPort_Current.PortName;
+            Forwader.BaudRate = serialPort_Current.Baudrate;
             StartThread();
         }
         private void StartThread()
@@ -189,7 +192,7 @@ namespace PC_TOOLV2
             if (dataReceivedQueue.Count > 0)
             {
                 tpmMessage = dataReceivedQueue.Dequeue();
-                SendResponseToForwader(tpmMessage.Id, "FFFF");
+                SendResponseToForwader(tpmMessage.Id, "FF");
                 if (String.Compare(tpmMessage.Id,IdDataNode1) == 0 )
                 {
                     if(String.Compare(tpmMessage.Message,"FF") == 0 )
@@ -276,8 +279,8 @@ namespace PC_TOOLV2
         {
             bool retVal = true;
             Message_t buffer = new Message_t();
-            while (requestResponseQueue.Count == 0 && pingTimeout.ElapsedMilliseconds < 50) ;
-            if (requestResponseQueue.Count > 0  && pingTimeout.ElapsedMilliseconds < 50)
+            while (requestResponseQueue.Count == 0 && pingTimeout.ElapsedMilliseconds < 100) ;
+            if (requestResponseQueue.Count > 0  && pingTimeout.ElapsedMilliseconds < 100)
             {
                 buffer = requestResponseQueue.Dequeue();
                 if (String.Compare(buffer.Id, ID) == 0 && String.Compare(buffer.Message, Data) == 0)
@@ -288,29 +291,24 @@ namespace PC_TOOLV2
             }
             else
             {
-
+                pingTimeout.Stop();
                 retVal = false;
             }
             this.Invoke(new Action(() =>
             {
                 pingLabel.Text = pingTimeout.ElapsedMilliseconds.ToString() + " ms";
             }));
-            pingTimeout.Stop();
             pingTimeout.Reset();
             IdFilterResponse = "";
             mappingData.Remove(IdMappingData);
             return retVal;
         }
-        private void SendResponseToForwader(string ID, string Data)
+        private void SendResponseToForwader(string IdNode, string Data)
         {
-            string message = ID + "-" + Data;
+            string message = IdNode + "-" + Data;
             if (Forwader.IsOpen == true)
             {
                 Forwader.WriteLine(message);
-            }
-            else
-            {
-                pcToolState = PCToolState_t.PCTool_Reconnect;
             }
         }
         private void SendRequestToNode(string IdNode, string Data)
@@ -389,6 +387,7 @@ namespace PC_TOOLV2
             advanceModeForm.UpdateSerialPort += UpdateSerialPort;
             advanceModeForm.StartPosition = FormStartPosition.Manual;
             advanceModeForm.Location = new System.Drawing.Point(this.Location.X + 50, this.Location.Y + 50); // Đặt vị trí tùy ý
+            advanceModeForm.ReceivedSerialPort(serialPort_Current);
             advanceModeForm.Show();
         }
         private void SettingBTN_Click(object sender, EventArgs e)
@@ -406,8 +405,8 @@ namespace PC_TOOLV2
             buffer = Forwader.ReadLine();
             if (buffer != null)
             {
-                checkTimeout.Restart();
                 pingTimeout.Stop();
+                checkTimeout.Restart();
                 parseMessage(buffer);
                 if (isResponExist(IdMappingData) != true)
                 {
@@ -415,13 +414,13 @@ namespace PC_TOOLV2
                     {
                         mappingData.Add(IdMappingData, buffer);
                         requestResponseQueue.Enqueue(new Message_t(ParseData.Id, ParseData.Message));
-                        pingTimeout.Stop();
+
                     }
                 }
                 if (String.Compare(IdDataNode1, ParseData.Id) == 0 || String.Compare(IdDataNode2, ParseData.Id) == 0)
                 {
                     dataReceivedQueue.Enqueue(new Message_t(ParseData.Id,ParseData.Message));
-                    pingTimeout.Stop();
+
                 }
             }
         }
