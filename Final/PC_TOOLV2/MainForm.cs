@@ -185,6 +185,10 @@ namespace PC_TOOLV2
         private void Task_PCToolReconnect()
         {
             TimerCounter.Start();
+            this.Invoke(new Action(() =>
+            {
+                statusConnectBtn.BackColor = Color.Yellow;
+            }));
             while (TimerCounter.ElapsedMilliseconds < 1000) ;
             SendRequestToNode("A0", "00");
             if (checkRequestConnection("A0", "FF") == true)
@@ -193,10 +197,19 @@ namespace PC_TOOLV2
                 TimerCounter.Stop();
                 TimerCounter.Reset();
             }
+            if (serialPortInforQueue.Count > 0)
+            {
+                pcToolState = PCToolState_t.PCTool_Pause;
+            }
+
         }
         private void Task_PCToolRunning()
         {
             Message_t tpmMessage = new Message_t();
+            this.Invoke(new Action(() =>
+            {
+                statusConnectBtn.BackColor = Color.Green;
+            }));
             if (dataReceivedQueue.Count > 0)
             {
                 tpmMessage = dataReceivedQueue.Dequeue();
@@ -259,10 +272,16 @@ namespace PC_TOOLV2
             }
             if(checkTimeout.ElapsedMilliseconds > 1000)
             {
+                checkTimeout.Stop();
+                checkTimeout.Reset();
                 SendRequestToNode("A0", "00");
                 if (checkRequestConnection("A0", "FF") != true)
                 {
                     pcToolState = PCToolState_t.PCTool_Disconnected;
+                }
+                else
+                {
+                    pcToolState = PCToolState_t.PCTool_Running;
                 }
             }
             if(serialPortInforQueue.Count > 0)
@@ -277,6 +296,12 @@ namespace PC_TOOLV2
             {
                 tpmSerialInfor = serialPortInforQueue.Dequeue();
                 Forwader.Close();
+                Forwader.PortName = tpmSerialInfor.PortName;
+                Forwader.BaudRate = tpmSerialInfor.Baudrate;
+            }
+            else
+            {
+                tpmSerialInfor = serialPortInforQueue.Dequeue();
                 Forwader.PortName = tpmSerialInfor.PortName;
                 Forwader.BaudRate = tpmSerialInfor.Baudrate;
             }
@@ -414,7 +439,10 @@ namespace PC_TOOLV2
             buffer = Forwader.ReadLine();
             if (buffer != null)
             {
-                pingTimeout.Stop();
+                if(pingTimeout.IsRunning == true)
+                {
+                    pingTimeout.Stop();
+                }
                 checkTimeout.Restart();
                 parseMessage(buffer);
                 if (isResponExist(IdMappingData) != true)

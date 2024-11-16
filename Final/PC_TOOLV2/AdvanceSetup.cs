@@ -35,7 +35,7 @@ namespace PC_TOOLV2
 
         private void Form2_Load(object sender, EventArgs e)
         {
-            string[] baudrate = { "9600", "115200" };
+            string[] baudrate = { "9600","57600", "115200" };
             string[] porrName = SerialPort.GetPortNames();
             listPortCb.DataSource = porrName;
             listBaundrate.DataSource = baudrate;
