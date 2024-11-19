@@ -35,14 +35,14 @@ namespace PC_TOOLV2
         private Dictionary<int,string> mappingData = new Dictionary<int,string>();
         private Queue<SerialPortInfor_t> serialPortInforQueue = new Queue<SerialPortInfor_t>();
         private Message_t ParseData = new Message_t();
-        private string IdDataNode1 = "192";
-        private string IdDataNode2 = "208";
+        private string IdDataNode1 = "192"; /* Rotation */
+        private string IdDataNode2 = "208"; /* Distance */
         private string IdFilterResponse = "";
         private int IdMappingData;
         private Stopwatch TimerCounter = new Stopwatch();
         private Stopwatch checkTimeout = new Stopwatch();
         private Stopwatch pingTimeout = new Stopwatch();
-        private string filePath = "./../../Config.txt";
+        private string filePath = "./Config.txt";
         private bool isResponExist(int ID)
         {
             bool retVal = true;
@@ -138,11 +138,11 @@ namespace PC_TOOLV2
         }
         private void Task_PCToolInit()
         {
-            SendRequestToNode("160", "00");
-            if ( checkRequestConnection("160", "65535") == true)
+            SendRequestToNode("160", "10");
+            if ( checkRequestConnection("160", "255") == true)
             {
-                SendRequestToNode("161", "00");
-                if(checkRequestConnection("161","65535") == true)
+                SendRequestToNode("161", "10");
+                if(checkRequestConnection("161", "255") == true)
                 {
                     this.Invoke(new Action(() =>
                     {
@@ -156,8 +156,8 @@ namespace PC_TOOLV2
                         rotaionLabel.Text = "Disconnection";
                     }));
                 }    
-                SendRequestToNode("162", "00");
-                if (checkRequestConnection("162", "65535") == true)
+                SendRequestToNode("162", "10");
+                if (checkRequestConnection("162", "255") == true)
                 {
                     this.Invoke(new Action(() =>
                     {
@@ -190,8 +190,8 @@ namespace PC_TOOLV2
                 statusConnectBtn.BackColor = Color.Yellow;
             }));
             while (TimerCounter.ElapsedMilliseconds < 1000) ;
-            SendRequestToNode("160", "00");
-            if (checkRequestConnection("160", "65535") == true)
+            SendRequestToNode("160", "10");
+            if (checkRequestConnection("160", "255") == true)
             {
                 pcToolState = PCToolState_t.PCTool_Running;
                 TimerCounter.Stop();
@@ -201,7 +201,6 @@ namespace PC_TOOLV2
             {
                 pcToolState = PCToolState_t.PCTool_Pause;
             }
-
         }
         private void Task_PCToolRunning()
         {
@@ -274,8 +273,8 @@ namespace PC_TOOLV2
             {
                 checkTimeout.Stop();
                 checkTimeout.Reset();
-                SendRequestToNode("160", "00");
-                if (checkRequestConnection("160", "65535") != true)
+                SendRequestToNode("160", "10");
+                if (checkRequestConnection("160", "255") != true)
                 {
                     pcToolState = PCToolState_t.PCTool_Disconnected;
                 }
